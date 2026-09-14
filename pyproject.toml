@@ -10,6 +10,8 @@ dependencies = [
     "seaborn",
     "streamlit",
     "kagglehub",
+    "jupyter>=1.1.1",
+    "ipykernel>=7.3.0",
 ]
 
 [project.optional-dependencies]
