@@ -16,6 +16,10 @@ dependencies = [
 
 [project.optional-dependencies]
 
+[project.scripts]
+train = "src.training.train:main"
+"src.training.train" = "src.training.train:main"
+
 cpu = [
     "tensorflow-cpu",
 ]

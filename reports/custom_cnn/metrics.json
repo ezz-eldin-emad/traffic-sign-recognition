@@ -1,0 +1,14 @@
+{
+  "model": "custom_cnn",
+  "display_name": "Custom CNN",
+  "model_type": "deep_learning",
+  "test_samples": 12630,
+  "top1_accuracy": 0.9696753760886777,
+  "top5_accuracy": 0.9946159936658749,
+  "macro_f1": 0.9577565282573153,
+  "model_size_bytes": 2948880,
+  "model_size": "2.81 MB",
+  "total_parameters": 238315,
+  "trainable_parameters": 238315,
+  "non_trainable_parameters": 0
+}

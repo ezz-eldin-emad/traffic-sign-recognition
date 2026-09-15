@@ -61,6 +61,28 @@ uv sync --extra cuda
 uv run src/data/download_dataset.py
 ```
 
+Train a model through the shared entry point:
+
+```bash
+uv run python -m src.training.train --model custom_cnn
+uv run python -m src.training.train --model mobilenet_v3_small_gtsrb
+```
+
+Evaluation models
+
+```bash
+uv run python -m src.evaluation.evaluate --model random_forest
+uv run python -m src.evaluation.evaluate --model svm
+uv run python -m src.evaluation.evaluate --model custom_cnn
+uv run python -m src.evaluation.evaluate --model mobilenet_v3_small_gtsrb
+
+# or
+
+uv run python -m src.evaluation.evaluate --model all
+
+```
+
+
 ## Libraries / Requirements
 
 Refer to the `pyproject.toml` file for the complete list of dependencies.

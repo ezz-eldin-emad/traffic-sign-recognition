@@ -1,0 +1,3 @@
+model,display_name,model_type,model_size,model_size_bytes,total_parameters,trainable_parameters,non_trainable_parameters,support_vectors,n_features,n_estimators,total_nodes,average_nodes_per_tree,max_nodes_per_tree,test_samples,top1_accuracy,top5_accuracy,macro_f1
+custom_cnn,Custom CNN,deep_learning,2.81 MB,2948880,238315,238315,0,,,,,,,12630,0.9696753760886777,0.9946159936658749,0.9577565282573153
+mobilenet_v3_small_gtsrb,MobileNetV3-Small,deep_learning,9.56 MB,10019508,1018523,667595,350928,,,,,,,12630,0.9078384798099762,0.9948535233570863,0.8414063643771434

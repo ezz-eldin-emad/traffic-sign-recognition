@@ -1,0 +1,14 @@
+{
+  "model": "mobilenet_v3_small_gtsrb",
+  "display_name": "MobileNetV3-Small",
+  "model_type": "deep_learning",
+  "test_samples": 12630,
+  "top1_accuracy": 0.9078384798099762,
+  "top5_accuracy": 0.9948535233570863,
+  "macro_f1": 0.8414063643771434,
+  "model_size_bytes": 10019508,
+  "model_size": "9.56 MB",
+  "total_parameters": 1018523,
+  "trainable_parameters": 667595,
+  "non_trainable_parameters": 350928
+}
