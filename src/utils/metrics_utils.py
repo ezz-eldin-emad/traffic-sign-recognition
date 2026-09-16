@@ -8,11 +8,16 @@ def calculate_top_k_accuracy(
     y_true: np.ndarray,
     y_prob: np.ndarray,
     k: int,
+    class_labels: np.ndarray | None = None,
 ) -> float:
     """Calculate top-k classification accuracy."""
     k = min(k, y_prob.shape[1])
+    if class_labels is None:
+        class_labels = np.arange(y_prob.shape[1])
+    class_labels = np.asarray(class_labels)
 
     top_k_predictions = np.argsort(y_prob, axis=1)[:, -k:]
+    top_k_predictions = class_labels[top_k_predictions]
 
     return float(
         np.mean(

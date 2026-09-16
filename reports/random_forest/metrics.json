@@ -1,0 +1,23 @@
+{
+  "model": "random_forest",
+  "display_name": "Random Forest",
+  "model_type": "classical_ml",
+  "test_samples": 12630,
+  "top1_accuracy": 0.5956452889944577,
+  "top5_accuracy": 0.9369754552652415,
+  "macro_f1": 0.5910859225159042,
+  "threshold": 0.3,
+  "model_size_bytes": 20906733,
+  "model_size": "19.94 MB",
+  "n_estimators": 100,
+  "total_nodes": 397120,
+  "average_nodes_per_tree": 3971.2,
+  "max_nodes_per_tree": 4153,
+  "robustness_mean_top1": 0.4841207002727192,
+  "robustness_mean_top5": 0.8692531010820796,
+  "robustness_mean_macro_f1": 0.48362181692640305,
+  "latency_mean_ms": 24.903427040262613,
+  "latency_median_ms": 24.511536499630893,
+  "latency_p95_ms": 26.361543998064008,
+  "throughput_images_per_second": 40.15511593578065
+}

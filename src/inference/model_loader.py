@@ -1,10 +1,31 @@
+import __main__
+
 from tensorflow import keras
+import joblib
 
 from src.config import MODEL_REGISTRY
+from src.models.classical_ml import (
+    FlattenTransformer,
+    HOGExtractor,
+    ImagePreprocessor,
+)
+
+
+def _load_classical_artifact(path):
+    """Load notebook and project classical artifacts across pickle sessions."""
+    # Notebook-defined transformers are recorded as __main__.ClassName.
+    # Register the project implementations before unpickling those artifacts.
+    for name, cls in {
+        "ImagePreprocessor": ImagePreprocessor,
+        "HOGExtractor": HOGExtractor,
+        "FlattenTransformer": FlattenTransformer,
+    }.items():
+        setattr(__main__, name, cls)
+    return joblib.load(path)
 from src.inference.tflite_model import TFLiteClassifier
 
 
-def load_model_by_name(model_name: str) -> keras.Model | TFLiteClassifier:
+def load_model_by_name(model_name: str):
     """Load one saved inference model from the central model registry."""
     if model_name not in MODEL_REGISTRY:
         available = ", ".join(MODEL_REGISTRY)
@@ -18,7 +39,45 @@ def load_model_by_name(model_name: str) -> keras.Model | TFLiteClassifier:
         return keras.models.load_model(config["path"], compile=False)
     if config["type"] == "tflite":
         return TFLiteClassifier(config["path"])
+    if config["type"] == "ml":
+        artifact = _load_classical_artifact(config["path"])
+        if isinstance(artifact, dict):
+            model = artifact.get("model")
+        else:
+            model = artifact
+        if model is None:
+            raise ValueError(
+                f"Classical artifact for '{model_name}' must contain a "
+                "'model' pipeline and calibrated 'threshold'."
+            )
+        return model
     raise ValueError(f"'{model_name}' is not an inference model.")
+
+
+def load_classical_threshold(model_name: str) -> float:
+    """Load the calibrated threshold saved by the classical ML notebook."""
+    if model_name not in MODEL_REGISTRY or MODEL_REGISTRY[model_name]["type"] != "ml":
+        raise ValueError(f"'{model_name}' is not a classical ML model.")
+    path = MODEL_REGISTRY[model_name]["path"]
+    if not path.is_file():
+        raise FileNotFoundError(
+            f"Classical model artifact is missing: {path}. Run the final cell "
+            "of notebooks/02_classical_ml.ipynb first."
+        )
+    artifact = _load_classical_artifact(path)
+    if not isinstance(artifact, dict):
+        raise ValueError(
+            f"Classical artifact for '{model_name}' has no embedded threshold."
+        )
+    try:
+        threshold = float(artifact["threshold"])
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ValueError(
+            f"No valid calibrated threshold found inside '{path}'."
+        ) from exc
+    if threshold < 0:
+        raise ValueError(f"Invalid negative threshold for '{model_name}'.")
+    return threshold
 
 
 def load_custom_cnn() -> keras.Model:

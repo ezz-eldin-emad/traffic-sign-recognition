@@ -11,6 +11,11 @@ from src.inference.model_loader import (
     load_mobilenet,
     load_tflite_model,
 )
+from src.models.classical_ml import (
+    ImagePreprocessor,
+    build_random_forest_pipeline,
+    build_svm_pipeline,
+)
 from src.inference.preprocessing import preprocess_image
 from src.xai.gradcam import make_gradcam_heatmap
 from src.xai.targets import get_target_layer
@@ -61,6 +66,20 @@ class CoreSmokeTests(unittest.TestCase):
             self.assertEqual(tuple(probabilities.shape), (1, 43))
             self.assertTrue(np.isfinite(probabilities).all())
             self.assertAlmostEqual(float(probabilities.sum()), 1.0, places=3)
+
+    def test_classical_pipelines_match_notebook_preprocessing(self):
+        images = np.zeros((2, 24, 32, 3), dtype=np.uint8)
+        processed = ImagePreprocessor().fit_transform(images)
+
+        self.assertEqual(tuple(processed.shape), (2, 100, 100))
+        self.assertEqual(
+            list(build_svm_pipeline().named_steps),
+            ["preprocess", "hog", "scaler", "clf"],
+        )
+        self.assertEqual(
+            list(build_random_forest_pipeline().named_steps),
+            ["preprocess", "flatten", "clf"],
+        )
 
 
 if __name__ == "__main__":

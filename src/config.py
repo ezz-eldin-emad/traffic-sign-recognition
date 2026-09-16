@@ -20,6 +20,14 @@ EVAL_BATCH_SIZE = 128
 NUM_CLASSES = 43
 IMG_SIZE_CUSTOM_CNN = (128, 128)
 IMG_SIZE_MOBILENET = (224, 224)
+IMG_SIZE_CLASSICAL = (100, 100)
+
+CLASSICAL_VALIDATION_SPLIT = 0.15
+CLASSICAL_N_JOBS = -1
+SVM_C = 1.0
+SVM_MAX_ITER = 3000
+SVM_TOL = 1e-3
+RF_ESTIMATORS = 200
 
 CNN_EPOCHS = 100
 HEAD_EPOCHS = 20
@@ -120,13 +128,17 @@ MODEL_REGISTRY = {
         "display_name": "SVM",
         "type": "ml",
         "path": MODEL_DIR / "svm_model.joblib",
-        "image_size": None,
+        "image_size": IMG_SIZE_CLASSICAL,
+        "feature_pipeline": "hog",
+        "confidence_type": "margin",
     },
     "random_forest": {
         "display_name": "Random Forest",
         "type": "ml",
         "path": MODEL_DIR / "random_forest_model.joblib",
-        "image_size": None,
+        "image_size": IMG_SIZE_CLASSICAL,
+        "feature_pipeline": "flatten",
+        "confidence_type": "probability",
     },
 }
 
@@ -135,4 +147,15 @@ DEEP_LEARNING_MODELS = (
     "mobilenet_v3_small_gtsrb",
     "custom_cnn_float16_tflite",
     "custom_cnn_int8_tflite",
+)
+
+CLASSICAL_ML_MODELS = (
+    "svm",
+    "random_forest",
+)
+
+TRAINABLE_MODELS = (
+    "custom_cnn",
+    "mobilenet_v3_small_gtsrb",
+    *CLASSICAL_ML_MODELS,
 )

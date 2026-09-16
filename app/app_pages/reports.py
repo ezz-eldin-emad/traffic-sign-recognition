@@ -40,8 +40,7 @@ def render_model_cards(comparison: pd.DataFrame) -> None:
                         else pd.DataFrame()
                     )
                     if row.empty:
-                        text = "In progress" if config["type"] == "ml" else "No report yet"
-                        st.info(text)
+                        st.info("No report yet")
                         continue
 
                     values = row.iloc[0]

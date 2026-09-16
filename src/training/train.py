@@ -1,4 +1,5 @@
 import argparse
+import joblib
 
 import tensorflow as tf
 from tensorflow import keras
@@ -17,9 +18,13 @@ from src.config import (
     NUM_CLASSES,
     SEED,
     MODEL_REGISTRY,
+    CLASSICAL_ML_MODELS,
+    TRAINABLE_MODELS,
 )
+from src.data.classical_dataset import load_classical_training_data
 from src.data.dataset_loader import load_datasets
 from src.models.custom_cnn import build_custom_cnn
+from src.models.classical_ml import build_classical_pipeline
 from src.models.mobilenet_v3_small import build_mobilenet_model
 
 
@@ -28,7 +33,7 @@ MODEL_CONFIGS = {
         **MODEL_REGISTRY[name],
         "output": MODEL_REGISTRY[name]["path"].name,
     }
-    for name in ("custom_cnn", "mobilenet_v3_small_gtsrb")
+    for name in TRAINABLE_MODELS
 }
 
 
@@ -101,8 +106,39 @@ def train_mobilenet(train_ds, val_ds, test_ds, class_names) -> None:
     print(f"Test metrics: {model.evaluate(test_ds, return_dict=True)}")
 
 
+def _scores_for_classical_model(model, images: object) -> object:
+    """Return ranking scores for validation Top-k metrics."""
+    if hasattr(model, "predict_proba"):
+        return model.predict_proba(images)
+    return model.decision_function(images)
+
+
+def train_classical(model_name: str) -> None:
+    """Train and save one notebook-compatible classical ML pipeline."""
+    X_train, y_train, X_val, y_val = load_classical_training_data()
+    model = build_classical_pipeline(model_name)
+    model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_val)
+    scores = _scores_for_classical_model(model, X_val)
+    top5 = (
+        (scores.argsort(axis=1)[:, -5:] == y_val[:, None]).any(axis=1).mean()
+    )
+    print(f"Validation accuracy ({model_name}): {(y_pred == y_val).mean():.4f}")
+    print(f"Validation Top-5 accuracy ({model_name}): {top5:.4f}")
+
+    output_path = MODEL_REGISTRY[model_name]["path"]
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump(model, output_path)
+    print(f"Saved {model_name} to {output_path}")
+
+
 def train(model_name: str) -> None:
     tf.keras.utils.set_random_seed(SEED)
+    if model_name in CLASSICAL_ML_MODELS:
+        train_classical(model_name)
+        return
+
     config = MODEL_CONFIGS[model_name]
     train_ds, val_ds, test_ds, class_names = load_datasets(
         image_size=config["image_size"],

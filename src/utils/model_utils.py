@@ -53,28 +53,36 @@ def get_ml_model_complexity(
         "model_size": format_size(size_bytes),
     }
 
+    estimator = (
+        model.named_steps.get("clf", model)
+        if hasattr(model, "named_steps")
+        else model
+    )
+
     if model_name == "svm":
-        if hasattr(model, "support_vectors_"):
+        if hasattr(estimator, "n_features_in_"):
+            complexity["n_features"] = int(estimator.n_features_in_)
+        if hasattr(estimator, "support_vectors_"):
             complexity["support_vectors"] = int(
-                model.support_vectors_.shape[0]
+                estimator.support_vectors_.shape[0]
             )
             complexity["n_features"] = int(
-                model.support_vectors_.shape[1]
+                estimator.support_vectors_.shape[1]
             )
 
-        if hasattr(model, "n_support_"):
+        if hasattr(estimator, "n_support_"):
             complexity["support_vectors_per_class"] = (
-                model.n_support_.tolist()
+                estimator.n_support_.tolist()
             )
 
     elif model_name == "random_forest":
-        if hasattr(model, "n_estimators"):
-            complexity["n_estimators"] = int(model.n_estimators)
+        if hasattr(estimator, "n_estimators"):
+            complexity["n_estimators"] = int(estimator.n_estimators)
 
-        if hasattr(model, "estimators_"):
+        if hasattr(estimator, "estimators_"):
             node_counts = [
-                estimator.tree_.node_count
-                for estimator in model.estimators_
+                tree.tree_.node_count
+                for tree in estimator.estimators_
             ]
 
             if node_counts:
