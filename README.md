@@ -1,220 +1,226 @@
 # Intelligent Traffic Sign Recognition System
 
-## Overview
+An end-to-end traffic-sign image-classification system built with the German
+Traffic Sign Recognition Benchmark (GTSRB). The project combines classical
+machine learning, convolutional neural networks, transfer learning,
+TensorFlow Lite deployment, model evaluation, robustness analysis, and a
+Streamlit interface for interactive predictions.
 
-This project is an image-classification system for recognizing German traffic
-signs from the German Traffic Sign Recognition Benchmark (GTSRB) dataset. It
-combines classical machine-learning baselines and deep-learning models with
-model comparison, robustness evaluation, explainability, and a Streamlit
-application for single-image predictions.
+## Live application
 
-## Team members
+[Open the Intelligent Traffic Sign Recognition System](https://intelligent-traffic-sign-recognition-system.streamlit.app)
 
-- Ezz El-Din Emad Ali Aref
-- Ali Ahmed Ali Mohamed Ahmed
-- Ammar Mohamed Hassan Ahmed
-- Omar Osama Abdelgawad Hussein
-- Omar Khaled Mohamed El-Garwany
-- Omar Alaa Salah Abdel Aziz
+## Project highlights
 
-## Project scope
-
-The repository supports the following workflows:
-
-- Training classical ML and deep-learning traffic-sign classifiers.
-- Comparing models using test accuracy, Top-5 accuracy, macro F1, model size, and latency.
-- Evaluating robustness under blur, illumination, and perspective transformations.
-- Generating Grad-CAM visualizations for supported Keras models.
-- Using Float16 and Int8 TensorFlow Lite artifacts for the custom CNN.
-- Uploading a traffic-sign image in Streamlit and displaying the Top-3 predictions.
+- Classification across 43 German traffic-sign classes.
+- Comparison of classical ML and deep-learning models.
+- Top-1, Top-5, macro F1, latency, throughput, and model-size evaluation.
+- Robustness testing under blur, illumination, and perspective transformations.
+- Grad-CAM explanations for supported Keras models.
+- Float16 and Int8 TensorFlow Lite deployment artifacts.
+- Interactive single-image inference through Streamlit.
 
 ## Models
 
-| Model | Approach | Artifact | Grad-CAM |
+| Model | Method | Saved artifact | Grad-CAM |
 | --- | --- | --- | --- |
-| Custom CNN | Keras convolutional network | `models/cnn_model_customized.keras` | Yes |
-| MobileNetV3-Small | Transfer learning with fine-tuning | `models/mobilenet_v3_small_gtsrb.keras` | Yes |
-| HOG + Linear SVM | Equalized grayscale images, HOG features, scaling, and `LinearSVC` | `models/svm_model.joblib` | No |
-| Random Forest | Equalized grayscale pixel features and `RandomForestClassifier` | `models/random_forest_model.joblib` | No |
-| Custom CNN Float16 | TensorFlow Lite deployment artifact | `models/cnn_model_customized_float16.tflite` | No |
-| Custom CNN Int8 | TensorFlow Lite deployment artifact | `models/cnn_model_customized_int8.tflite` | No |
+| Custom CNN | Keras convolutional neural network | `models/cnn_model_customized.keras` | Yes |
+| MobileNetV3-Small | Transfer learning and fine-tuning | `models/mobilenet_v3_small_gtsrb.keras` | Yes |
+| HOG + Linear SVM | HOG features with scaling and `LinearSVC` | `models/svm_model.joblib` | No |
+| Random Forest | Equalized grayscale pixel features | `models/random_forest_model.joblib` | No |
+| Custom CNN Float16 | TensorFlow Lite deployment model | `models/cnn_model_customized_float16.tflite` | No |
+| Custom CNN Int8 | Quantized TensorFlow Lite deployment model | `models/cnn_model_customized_int8.tflite` | No |
 
-The classical ML preprocessing follows `Final_Project_ML.ipynb`. The shared
-training code saves each classical model as a Joblib pipeline, including the
-preprocessing steps required during inference.
+The model registry in `src/config.py` is the single source of truth for model
+names, display labels, artifact paths, input sizes, and inference types.
+
+## Streamlit application
+
+The application contains two pages:
+
+- **Experiments**: upload a `.jpg`, `.jpeg`, or `.png` image, select one or
+  more available models, compare predictions, inspect Top-3 results, and view
+  Grad-CAM visualizations.
+- **Reports**: browse saved comparison metrics, confusion matrices,
+  classification reports, robustness results, and latency benchmarks.
+
+Run the application locally from the repository root:
+
+```bash
+uv run streamlit run app/streamlit_app.py
+```
+
+The application automatically loads the model artifacts available in
+`models/`.
 
 ## Repository structure
-
-The repository structure follows the preferred organization for this project
-and the requirements of its implementation.
 
 ```text
 traffic-sign-recognition/
 ├── app/
-│   ├── app_pages/              # Streamlit pages and shared application logic
+│   ├── app_pages/              # Streamlit pages and shared UI/inference helpers
+│   ├── requirements.txt        # Streamlit Community Cloud dependencies
 │   └── streamlit_app.py        # Streamlit entry point
-├── models/                     # Saved Keras, TensorFlow Lite, and Joblib artifacts
-├── notebooks/                  # EDA, preprocessing, CNN, and transfer-learning notebooks
-├── reports/                    # Per-model evaluation outputs and comparison data
+├── models/                     # Keras, TensorFlow Lite, and Joblib artifacts
+├── notebooks/                  # EDA, classical ML, CNN, and transfer-learning work
+├── reports/                    # Evaluation outputs and model comparison data
 ├── src/
-│   ├── data/                   # Dataset download, preparation, and data loaders
-│   ├── evaluation/             # Metrics, latency, robustness, and evaluation commands
-│   ├── inference/              # Model loading and input preprocessing
-│   ├── models/                 # Deep-learning builders and classical ML pipelines
-│   ├── quantization/           # TensorFlow Lite quantization utilities
-│   ├── training/               # Shared training entry point
-│   ├── utils/                  # Metrics, artifacts, and model metadata helpers
+│   ├── data/                   # Dataset download, preparation, and loaders
+│   ├── evaluation/             # Metrics, robustness, latency, and evaluation
+│   ├── inference/              # Model loading and preprocessing
+│   ├── models/                 # CNN and classical ML model definitions
+│   ├── quantization/           # TensorFlow Lite quantization workflow
+│   ├── training/               # Shared model-training entry point
+│   ├── utils/                  # Metrics and artifact utilities
 │   └── xai/                    # Grad-CAM and target-layer utilities
-├── tests/                      # Unit and smoke tests
-├── pyproject.toml              # Project metadata and dependencies
-└── README.md
+├── tests/                      # Unit and application smoke tests
+├── pyproject.toml              # Project metadata and dependency definitions
+├── requirements.txt            # Exported development dependencies
+└── uv.lock                    # Reproducible uv dependency lockfile
 ```
 
 ## Requirements
 
 - Python `>=3.10,<3.13`
 - [uv](https://docs.astral.sh/uv/getting-started/installation/)
-- A local GTSRB dataset for training and evaluation
-- Either the CPU or CUDA TensorFlow extra
+- A local copy of the GTSRB dataset for training and evaluation
+- TensorFlow CPU or CUDA support, depending on the selected environment
 
-The main dependencies are NumPy, pandas, scikit-learn, scikit-image, OpenCV,
-Joblib, TensorFlow, Streamlit, matplotlib, seaborn, and KaggleHub. The complete
-dependency list is defined in `pyproject.toml`.
+## Installation
 
-## Installation and dataset preparation
-
-Clone the repository:
+Clone the repository and enter the project directory:
 
 ```bash
 git clone https://github.com/ezz-eldin-emad/traffic-sign-recognition.git
 cd traffic-sign-recognition
 ```
 
-Create the virtual environment and install the CPU dependencies:
+Create the environment and install the CPU dependencies:
 
 ```bash
 uv venv
-source .venv/bin/activate       # On Windows: .venv\Scripts\activate
+source .venv/bin/activate       # Windows: .venv\Scripts\activate
 uv sync --extra cpu
 ```
 
-For a supported CUDA environment, use:
+For a CUDA-enabled environment:
 
 ```bash
 uv sync --extra cuda
 ```
 
-Download the dataset into `data/raw` and prepare the directory-based test
-dataset used by the Keras loaders:
+## Dataset preparation
+
+Download the GTSRB dataset into `data/raw`:
 
 ```bash
 uv run python src/data/download_dataset.py
+```
+
+Prepare the class-directory test set used by the Keras evaluation pipeline:
+
+```bash
 uv run python src/data/prepare_dataset.py
 ```
 
-The classical ML workflow reads `data/raw/Train.csv` and
-`data/raw/Test.csv`. The deep-learning workflow uses class directories under
-`data/raw/Train` and `data/processed/Test`.
+The project uses:
+
+- `data/raw/Train` for deep-learning training.
+- `data/raw/Test.csv` and the related images for classical ML evaluation.
+- `data/processed/Test` for directory-based Keras evaluation.
 
 ## Training
 
-Train a model through the shared entry point:
+Train the custom CNN:
 
 ```bash
 uv run python -m src.training.train --model custom_cnn
+```
+
+Train MobileNetV3-Small with transfer learning and fine-tuning:
+
+```bash
 uv run python -m src.training.train --model mobilenet_v3_small_gtsrb
+```
+
+Train the classical baselines:
+
+```bash
 uv run python -m src.training.train --model svm
 uv run python -m src.training.train --model random_forest
 ```
 
-The training commands save artifacts under `models/`. The classical commands
-produce:
-
-```text
-models/svm_model.joblib
-models/random_forest_model.joblib
-```
-
-The Float16 and Int8 files are TensorFlow Lite deployment artifacts for the
-custom CNN. They are used when the corresponding files are available.
+Training artifacts are saved in `models/`.
 
 ## Evaluation
 
-Evaluation is a post-training workflow and does not train models. Evaluate one
-registered model with:
+Evaluate one model:
 
 ```bash
 uv run python -m src.evaluation.evaluate_models --model custom_cnn
-uv run python -m src.evaluation.evaluate_models --model mobilenet_v3_small_gtsrb
-uv run python -m src.evaluation.evaluate_models --model custom_cnn_float16_tflite
-uv run python -m src.evaluation.evaluate_models --model custom_cnn_int8_tflite
-uv run python -m src.evaluation.evaluate_models --model svm
-uv run python -m src.evaluation.evaluate_models --model random_forest
 ```
 
-Evaluate all registered models with:
+Available model names are:
+
+```text
+custom_cnn
+mobilenet_v3_small_gtsrb
+custom_cnn_float16_tflite
+custom_cnn_int8_tflite
+svm
+random_forest
+```
+
+Evaluate all registered models and update the consolidated comparison:
 
 ```bash
 uv run python -m src.evaluation.evaluate_models --model all
 ```
 
-If an artifact is missing, the evaluation command reports that model as
-skipped. For available artifacts, evaluation produces:
+Evaluation outputs are written to `reports/<model-name>/`, including:
 
-- Top-1 and Top-5 accuracy
-- Macro F1 and a classification report
-- A confusion matrix image and NumPy matrix
-- Robustness results for blur, illumination, and perspective conditions
-- Latency and throughput measurements
-- Model-size and model-complexity metadata
+- `metrics.json`
+- `classification_report.txt`
+- `confusion_matrix.png`
+- `robustness.csv`
+- `robustness_summary.json`
+- `latency.json`
 - Saved true and predicted labels
 
-Per-model files are written to `reports/<model-name>/`. The consolidated
-comparison is written to `reports/model_comparison.csv`.
+The combined model comparison is saved as:
 
-## Streamlit application
-
-Start the application with:
-
-```bash
-uv run streamlit run app/streamlit_app.py
+```text
+reports/model_comparison.csv
 ```
 
-The application includes:
+## Quantization
 
-- An Experiments page for `.jpg`, `.jpeg`, and `.png` uploads.
-- Predictions from every saved model that is available in `models/`.
-- Top-3 predictions for each model.
-- Probability confidence for probabilistic models and decision margin for the SVM.
-- Grad-CAM heatmaps and overlays for supported Keras models.
-- A Reports page for viewing saved evaluation results.
+The custom CNN can be converted to TensorFlow Lite Float16 and Int8 artifacts
+using the quantization workflow in:
 
-The Experiments page loads only artifacts that are present in `models/`. Add
-the missing model files after training to include them in the comparison.
+```text
+src/quantization/cnn_quantization_customized.py
+```
+
+The generated deployment files are stored in `models/` and are supported by
+the Streamlit Experiments page.
 
 ## Tests
 
-Run the repository test suite with:
+Run the complete test suite:
 
 ```bash
 uv run python -m unittest discover -s tests -v
 ```
 
-The tests cover core preprocessing, robustness transformations, saved
-deep-learning model behavior, TensorFlow Lite output handling, and the
-classical pipeline structure.
+The tests cover preprocessing, robustness transformations, Grad-CAM behavior,
+TensorFlow Lite inference, classical ML pipelines, and Streamlit UI helpers.
 
-## Limitations and quality checks
+## Team
 
-- The dataset domain is limited to German traffic signs from GTSRB. Results
-  should not be assumed to transfer to other countries, sign systems, cameras,
-  or road conditions.
-- The current application performs single-image classification. It is not a
-  complete traffic-sign detection, tracking, or autonomous-driving system.
-- Reported metrics depend on the dataset, model artifacts, and runtime
-  configuration used for the evaluation.
-- Missing model artifacts must be generated or supplied before their models
-  can be evaluated or displayed in the application.
-- The project is intended for education, experimentation, and research.
-- The system has no road-safety certification and must not be used as an
-  independent road-safety, driving, or vehicle-control decision system.
+- Ezz El-Din Emad Ali Aref
+- Ali Ahmed Ali Mohamed Ahmed
+- Ammar Mohamed Hassan Ahmed
+- Omar Osama Abdelgawad Hussein
+- Omar Khaled Mohamed El-Garwany
+- Omar Alaa Salah Abdel Aziz Hussein
