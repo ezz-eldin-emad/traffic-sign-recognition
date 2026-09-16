@@ -1,0 +1,6 @@
+{
+  "conditions": 9,
+  "mean_top1_accuracy": 0.8893375560833994,
+  "mean_top5_accuracy": 0.9892407847277206,
+  "mean_macro_f1": 0.8217056105179333
+}
