@@ -57,8 +57,8 @@ uv sync --extra cpu
 # For systems with a supported Cuda GPU:
 uv sync --extra cuda
 
-# 4) Download the dataset (GTSRB) and place it in data/raw
-uv run src/data/download_dataset.py
+# 4) Download the dataset (GTSRB) when it is not already in data/raw
+uv run python src/data/download_dataset.py
 ```
 
 Train a model through the shared entry point:
@@ -68,7 +68,13 @@ uv run python -m src.training.train --model custom_cnn
 uv run python -m src.training.train --model mobilenet_v3_small_gtsrb
 ```
 
-Evaluation models
+Run the Streamlit application
+
+```bash
+uv run streamlit run app/streamlit_app.py
+```
+
+Evaluation (post-training only)
 
 ```bash
 uv run python -m src.evaluation.evaluate_models --model random_forest
@@ -76,11 +82,15 @@ uv run python -m src.evaluation.evaluate_models --model svm
 uv run python -m src.evaluation.evaluate_models --model custom_cnn
 uv run python -m src.evaluation.evaluate_models --model mobilenet_v3_small_gtsrb
 
-# or
-
-uv run python -m src.evaluation.evaluate --model all
+# Evaluate all registered models. Missing ML artifacts are skipped.
+uv run python -m src.evaluation.evaluate_models --model all
 
 ```
+
+The evaluation command also writes model footprint, latency, and robustness
+results for blur, illumination, and perspective transformations. It does not
+train models. The notebooks are separate artifacts and are not required to run
+the application or evaluation.
 
 
 ## Libraries / Requirements
@@ -99,7 +109,3 @@ The main libraries include:
 ## Repository Structure
 
 Refer to the **Repository Structure** section in the attached project guide (`PROJECT_GUIDE.md`).
-
-## Current Status
-
-This scaffold is an initial project structure with no actual implementation yet. Each file contains `TODOs` that clearly specify the required tasks for each step, according to the official TechTrek requirements (**Project 8 + Universal Requirements**).

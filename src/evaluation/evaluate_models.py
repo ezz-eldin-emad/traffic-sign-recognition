@@ -1,46 +1,14 @@
 import argparse
-from pathlib import Path
 
 import tensorflow as tf
 
-from src.config import (
-    IMG_SIZE_CUSTOM_CNN,
-    IMG_SIZE_MOBILENET,
-    MODEL_DIR,
-)
+from src.config import COMPARISON_PATH, MODEL_REGISTRY, REPORTS_DIR
 from src.evaluation.evaluation import evaluate_model
 from src.utils.evaluation_utils import print_comparison, save_comparison
 
 
-REPORTS_DIR = Path("reports")
-COMPARISON_PATH = REPORTS_DIR / "model_comparison.csv"
-
-
-MODEL_CONFIGS = {
-    "custom_cnn": {
-        "type": "cnn",
-        "image_size": IMG_SIZE_CUSTOM_CNN,
-        "path": MODEL_DIR / "cnn_model_customized.keras",
-        "display_name": "Custom CNN",
-    },
-    "mobilenet_v3_small_gtsrb": {
-        "type": "cnn",
-        "image_size": IMG_SIZE_MOBILENET,
-        "path": MODEL_DIR / "mobilenet_v3_small_gtsrb.keras",
-        "display_name": "MobileNetV3-Small",
-    },
-    "svm": {
-        "type": "ml",
-        "path": MODEL_DIR / "svm_model.joblib",
-        "display_name": "SVM",
-    },
-    "random_forest": {
-        "type": "ml",
-        "path": MODEL_DIR / "random_forest_model.joblib",
-        "display_name": "Random Forest",
-    },
-}
-
+# Kept as an alias for existing imports and command-line behavior.
+MODEL_CONFIGS = MODEL_REGISTRY
 
 COMPARISON_FIELDS = [
     "model",
@@ -61,50 +29,38 @@ COMPARISON_FIELDS = [
     "top1_accuracy",
     "top5_accuracy",
     "macro_f1",
+    "robustness_mean_top1",
+    "robustness_mean_top5",
+    "robustness_mean_macro_f1",
+    "latency_mean_ms",
+    "latency_median_ms",
+    "latency_p95_ms",
+    "throughput_images_per_second",
 ]
 
 
-
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Evaluate traffic-sign recognition models."
-    )
+    parser = argparse.ArgumentParser(description="Evaluate saved traffic-sign models.")
     parser.add_argument(
         "--model",
-        choices=[*MODEL_CONFIGS.keys(), "all"],
+        choices=[*MODEL_CONFIGS, "all"],
         required=True,
-        help="Model to evaluate.",
+        help="Model to evaluate. No training is performed.",
     )
     return parser.parse_args()
-
 
 
 def main() -> None:
     args = parse_args()
     tf.keras.utils.set_random_seed(42)
-    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-
-    if args.model == "all":
-        model_names = list(MODEL_CONFIGS.keys())
-    else:
-        model_names = [args.model]
-
+    model_names = list(MODEL_CONFIGS) if args.model == "all" else [args.model]
     results = []
 
     for model_name in model_names:
         try:
-            result = evaluate_model(
-                model_name,
-                MODEL_CONFIGS,
-                REPORTS_DIR,
-            )
-            results.append(result)
-        except FileNotFoundError as exc:
-            print(f"\n[SKIPPED] {model_name}")
-            print(exc)
-        except NotImplementedError as exc:
-            print(f"\n[SKIPPED] {model_name}")
-            print(exc)
+            results.append(evaluate_model(model_name, MODEL_CONFIGS, REPORTS_DIR))
+        except (FileNotFoundError, NotImplementedError) as exc:
+            print(f"\n[SKIPPED] {model_name}: {exc}")
 
     if results:
         print_comparison(results)

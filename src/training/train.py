@@ -16,6 +16,7 @@ from src.config import (
     MODEL_DIR,
     NUM_CLASSES,
     SEED,
+    MODEL_REGISTRY,
 )
 from src.data.dataset_loader import load_datasets
 from src.models.custom_cnn import build_custom_cnn
@@ -23,14 +24,11 @@ from src.models.mobilenet_v3_small import build_mobilenet_model
 
 
 MODEL_CONFIGS = {
-    "custom_cnn": {
-        "image_size": IMG_SIZE_CUSTOM_CNN,
-        "output": "cnn_model_customized.keras",
-    },
-    "mobilenet_v3_small_gtsrb": {
-        "image_size": IMG_SIZE_MOBILENET,
-        "output": "mobilenet_v3_small_gtsrb.keras",
-    },
+    name: {
+        **MODEL_REGISTRY[name],
+        "output": MODEL_REGISTRY[name]["path"].name,
+    }
+    for name in ("custom_cnn", "mobilenet_v3_small_gtsrb")
 }
 
 

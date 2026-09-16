@@ -3,10 +3,10 @@ from tensorflow.keras import layers
 
 data_augmentation_custom_cnn = keras.Sequential(
     [
-        tf.keras.layers.RandomRotation(0.08),
-        tf.keras.layers.RandomZoom(0.1),
-        tf.keras.layers.RandomBrightness(0.1),
-        tf.keras.layers.RandomContrast(0.1),
+        layers.RandomRotation(0.08),
+        layers.RandomZoom(0.1),
+        layers.RandomBrightness(0.1),
+        layers.RandomContrast(0.1),
     ],
     name="data_augmentation_custom_cnn",
 )

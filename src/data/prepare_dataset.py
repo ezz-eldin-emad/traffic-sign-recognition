@@ -1,30 +1,34 @@
 from pathlib import Path
 import shutil
+
 import pandas as pd
 
-output_dir = Path("./data/raw/")
-processed_test_dir = Path("./data/processed/Test")
-test_csv = output_dir / "Test.csv"
+from src.config import PROCESSED_TEST_DIR, TEST_CSV, RAW_DATA_DIR
 
-# Organize test images only if needed
-if processed_test_dir.is_dir():
-    organized_images = list(processed_test_dir.rglob("*.png"))
-else:
-    organized_images = []
 
-if len(organized_images) == len(pd.read_csv(test_csv)):
-    print("Test dataset is already organized. Skipping organization.")
-else:
-    test_data = pd.read_csv(test_csv)
+def prepare_test_dataset(
+    input_dir: Path = RAW_DATA_DIR,
+    output_dir: Path = PROCESSED_TEST_DIR,
+    test_csv: Path = TEST_CSV,
+) -> None:
+    """Copy test images into class folders for Keras evaluation."""
+    existing_images = list(output_dir.rglob("*.png")) if output_dir.is_dir() else []
+    rows = pd.read_csv(test_csv)
 
-    for _, row in test_data.iterrows():
-        class_dir = processed_test_dir / str(row["ClassId"])
+    if len(existing_images) == len(rows):
+        print("Test dataset is already organized. Skipping organization.")
+        return
+
+    for _, row in rows.iterrows():
+        class_dir = output_dir / str(row["ClassId"])
         class_dir.mkdir(parents=True, exist_ok=True)
-
-        source = output_dir / row["Path"]
+        source = input_dir / row["Path"]
         destination = class_dir / Path(row["Path"]).name
-
         if not destination.exists():
             shutil.copy2(source, destination)
 
-    print(f"Organized test dataset at {processed_test_dir}")
+    print(f"Organized test dataset at {output_dir}")
+
+
+if __name__ == "__main__":
+    prepare_test_dataset()
