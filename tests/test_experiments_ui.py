@@ -55,7 +55,6 @@ class ExperimentsUiTests(unittest.TestCase):
         app = AppTest.from_function(script).run()
 
         self.assertFalse(app.exception)
-        self.assertEqual(len(app.metric), 2)
         self.assertTrue(app.success)
 
 

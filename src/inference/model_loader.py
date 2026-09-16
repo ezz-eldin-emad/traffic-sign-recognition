@@ -1,6 +1,6 @@
-import __main__
+from __future__ import annotations
 
-from tensorflow import keras
+import __main__
 import joblib
 
 from src.config import MODEL_REGISTRY
@@ -22,7 +22,6 @@ def _load_classical_artifact(path):
     }.items():
         setattr(__main__, name, cls)
     return joblib.load(path)
-from src.inference.tflite_model import TFLiteClassifier
 
 
 def load_model_by_name(model_name: str):
@@ -36,8 +35,12 @@ def load_model_by_name(model_name: str):
         raise FileNotFoundError(f"Model file not found: {config['path']}")
 
     if config["type"] == "cnn":
+        from tensorflow import keras
+
         return keras.models.load_model(config["path"], compile=False)
     if config["type"] == "tflite":
+        from src.inference.tflite_model import TFLiteClassifier
+
         return TFLiteClassifier(config["path"])
     if config["type"] == "ml":
         artifact = _load_classical_artifact(config["path"])
@@ -92,6 +95,8 @@ def load_mobilenet() -> keras.Model:
 
 def load_tflite_model(model_name: str) -> TFLiteClassifier:
     """Load a registered TFLite model with its quantization metadata."""
+    from src.inference.tflite_model import TFLiteClassifier
+
     model = load_model_by_name(model_name)
     if not isinstance(model, TFLiteClassifier):
         raise ValueError(f"'{model_name}' is not a TFLite model.")

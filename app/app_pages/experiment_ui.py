@@ -47,11 +47,17 @@ def render_model_summary(model_name: str, entry: dict) -> None:
 
         st.success("Completed")
         result = entry["result"]
-        metric_columns = st.columns(2)
-        with metric_columns[0]:
-            st.metric("Prediction", result["label"])
-        with metric_columns[1]:
-            st.metric(result["confidence_label"], result["confidence_display"])
+        prediction_column, confidence_column = st.columns([1.6, 1])
+        with prediction_column:
+            # st.metric truncates long values with an ellipsis. Render the
+            # class name as normal text so long traffic-sign names wrap fully.
+            st.caption("Prediction")
+            st.write(result["label"])
+        with confidence_column:
+            # The large metric value also truncates values such as 100.00% in
+            # narrow comparison cards. Normal text keeps the complete value.
+            st.caption(result["confidence_label"])
+            st.write(result["confidence_display"])
         if not result.get("accepted", True):
             st.warning(
                 f"Below calibrated threshold ({result['threshold']:.3f}); "

@@ -1,0 +1,11 @@
+# Streamlit Community Cloud dependencies for app/streamlit_app.py.
+streamlit==1.63.0
+tensorflow-cpu==2.21.0
+numpy==2.5.3
+pandas==3.0.5
+scikit-learn==1.9.1
+scikit-image==0.26.0
+opencv-python-headless==5.0.0.93
+joblib==1.6.0
+matplotlib==3.11.2
+pillow==12.3.0

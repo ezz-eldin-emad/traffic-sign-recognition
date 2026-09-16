@@ -1,7 +1,5 @@
-import matplotlib
 import numpy as np
 import streamlit as st
-import tensorflow as tf
 from PIL import Image
 
 from src.config import (
@@ -9,10 +7,6 @@ from src.config import (
     MODEL_CLASS_IDS,
     MODEL_REGISTRY,
 )
-from src.inference.model_loader import load_classical_threshold, load_model_by_name
-from src.inference.preprocessing import preprocess_image
-from src.xai.gradcam import make_gradcam_heatmap
-from src.xai.targets import get_target_layer
 
 
 DISPLAY_IMAGE_SIZE = 360
@@ -39,6 +33,11 @@ def fit_image_to_box(
 @st.cache_resource(show_spinner=False)
 def get_model(model_name: str, model_path: str):
     """Cache a saved model and invalidate it when its file timestamp changes."""
+    # Load the ML backend only when a prediction is requested. This keeps
+    # navigation and the Reports page bootable on deployment environments
+    # where TensorFlow is unavailable or fails to initialize.
+    from src.inference.model_loader import load_model_by_name
+
     del model_path
     return load_model_by_name(model_name)
 
@@ -56,6 +55,8 @@ def create_gradcam_images(
     heatmap: np.ndarray,
 ) -> tuple[Image.Image, Image.Image]:
     base = original_image.convert("RGB")
+    import matplotlib
+
     resized_heatmap = Image.fromarray(np.uint8(heatmap * 255), mode="L").resize(
         base.size,
         Image.Resampling.BILINEAR,
@@ -67,6 +68,11 @@ def create_gradcam_images(
 
 
 def run_prediction(model_name: str, image: Image.Image) -> dict:
+    from src.inference.model_loader import (
+        load_classical_threshold,
+        load_model_by_name,
+    )
+
     config = MODEL_REGISTRY[model_name]
     model_path = config["path"]
     model = get_model(model_name, f"{model_path}:{model_path.stat().st_mtime_ns}")
@@ -136,6 +142,8 @@ def run_prediction(model_name: str, image: Image.Image) -> dict:
             ),
         }
 
+    from src.inference.preprocessing import preprocess_image
+
     tensor = preprocess_image(image, config["image_size"])
     if config["type"] == "tflite":
         probabilities = model.predict(tensor.numpy())[0]
@@ -148,6 +156,9 @@ def run_prediction(model_name: str, image: Image.Image) -> dict:
     heatmap_image = None
     overlay = None
     if config.get("supports_gradcam", config["type"] == "cnn"):
+        from src.xai.gradcam import make_gradcam_heatmap
+        from src.xai.targets import get_target_layer
+
         heatmap = make_gradcam_heatmap(
             tensor,
             model,
