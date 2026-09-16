@@ -71,10 +71,10 @@ uv run python -m src.training.train --model mobilenet_v3_small_gtsrb
 Evaluation models
 
 ```bash
-uv run python -m src.evaluation.evaluate --model random_forest
-uv run python -m src.evaluation.evaluate --model svm
-uv run python -m src.evaluation.evaluate --model custom_cnn
-uv run python -m src.evaluation.evaluate --model mobilenet_v3_small_gtsrb
+uv run python -m src.evaluation.evaluate_models --model random_forest
+uv run python -m src.evaluation.evaluate_models --model svm
+uv run python -m src.evaluation.evaluate_models --model custom_cnn
+uv run python -m src.evaluation.evaluate_models --model mobilenet_v3_small_gtsrb
 
 # or
 
