@@ -6,17 +6,28 @@ from PIL import Image
 
 from src.config import MODEL_REGISTRY
 from src.evaluation.robustness import transform_images
-from src.inference.model_loader import load_custom_cnn, load_mobilenet
+from src.inference.model_loader import (
+    load_custom_cnn,
+    load_mobilenet,
+    load_tflite_model,
+)
 from src.inference.preprocessing import preprocess_image
 from src.xai.gradcam import make_gradcam_heatmap
 from src.xai.targets import get_target_layer
 
 
 class CoreSmokeTests(unittest.TestCase):
-    def test_registry_contains_four_models(self):
+    def test_registry_contains_six_models(self):
         self.assertEqual(
             set(MODEL_REGISTRY),
-            {"custom_cnn", "mobilenet_v3_small_gtsrb", "svm", "random_forest"},
+            {
+                "custom_cnn",
+                "mobilenet_v3_small_gtsrb",
+                "custom_cnn_float16_tflite",
+                "custom_cnn_int8_tflite",
+                "svm",
+                "random_forest",
+            },
         )
 
     def test_preprocessing_returns_batched_tensor(self):
@@ -42,6 +53,14 @@ class CoreSmokeTests(unittest.TestCase):
             self.assertTrue(np.isfinite(heatmap).all())
             self.assertGreaterEqual(float(heatmap.min()), 0.0)
             self.assertLessEqual(float(heatmap.max()), 1.0)
+
+    def test_tflite_models_return_probabilities(self):
+        for model_name in ("custom_cnn_float16_tflite", "custom_cnn_int8_tflite"):
+            model = load_tflite_model(model_name)
+            probabilities = model.predict(np.zeros((1, 128, 128, 3), dtype=np.float32))
+            self.assertEqual(tuple(probabilities.shape), (1, 43))
+            self.assertTrue(np.isfinite(probabilities).all())
+            self.assertAlmostEqual(float(probabilities.sum()), 1.0, places=3)
 
 
 if __name__ == "__main__":

@@ -30,6 +30,15 @@ def get_dl_model_complexity(
     }
 
 
+def get_tflite_model_complexity(model_path: Path) -> dict:
+    """Collect file-size metadata for a TFLite deployment artifact."""
+    size_bytes = get_file_size(model_path)
+    return {
+        "model_size_bytes": size_bytes,
+        "model_size": format_size(size_bytes),
+    }
+
+
 
 def get_ml_model_complexity(
     model_name: str,

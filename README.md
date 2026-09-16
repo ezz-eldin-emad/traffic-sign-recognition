@@ -80,6 +80,8 @@ Evaluation (post-training only)
 uv run python -m src.evaluation.evaluate_models --model random_forest
 uv run python -m src.evaluation.evaluate_models --model svm
 uv run python -m src.evaluation.evaluate_models --model custom_cnn
+uv run python -m src.evaluation.evaluate_models --model custom_cnn_float16_tflite
+uv run python -m src.evaluation.evaluate_models --model custom_cnn_int8_tflite
 uv run python -m src.evaluation.evaluate_models --model mobilenet_v3_small_gtsrb
 
 # Evaluate all registered models. Missing ML artifacts are skipped.

@@ -8,7 +8,11 @@ from tensorflow import keras
 
 from src.config import EVAL_BATCH_SIZE, NUM_CLASSES
 from src.data.dataset_loader import load_datasets
-from src.evaluation.latency import benchmark_latency, save_latency_result
+from src.evaluation.latency import (
+    benchmark_latency,
+    benchmark_tflite_latency,
+    save_latency_result,
+)
 from src.evaluation.robustness import (
     ROBUSTNESS_LEVELS,
     save_robustness_results,
@@ -16,7 +20,13 @@ from src.evaluation.robustness import (
 )
 from src.utils.evaluation_utils import get_report_dir, save_evaluation_artifacts
 from src.utils.metrics_utils import calculate_macro_f1, calculate_top_k_accuracy
-from src.utils.model_utils import get_dl_model_complexity, get_ml_model_complexity
+from src.inference.model_loader import load_tflite_model
+from src.inference.tflite_model import TFLiteClassifier
+from src.utils.model_utils import (
+    get_dl_model_complexity,
+    get_ml_model_complexity,
+    get_tflite_model_complexity,
+)
 
 
 def collect_cnn_predictions(
@@ -44,6 +54,24 @@ def collect_cnn_predictions(
     return y_true, np.asarray(y_prob)
 
 
+def collect_tflite_predictions(
+    model: TFLiteClassifier,
+    dataset: tf.data.Dataset,
+    transform_name: str | None = None,
+    level: int | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Collect labels and dequantized probabilities from a TFLite model."""
+    labels_list = []
+    probabilities = []
+    for images, labels in dataset:
+        if transform_name is not None:
+            images = transform_images(images, transform_name, level or 1)
+        labels_list.append(labels.numpy())
+        probabilities.append(model.predict(images.numpy()))
+
+    return np.concatenate(labels_list, axis=0), np.concatenate(probabilities, axis=0)
+
+
 def _calculate_metrics(
     y_true: np.ndarray,
     y_prob: np.ndarray,
@@ -59,15 +87,16 @@ def _calculate_metrics(
 
 
 def _evaluate_robustness(
-    model: keras.Model,
+    model: keras.Model | TFLiteClassifier,
     test_ds: tf.data.Dataset,
     report_dir: Path,
+    prediction_collector,
 ) -> dict:
     rows = []
     for transform_name in ("blur", "illumination", "perspective"):
         for level in ROBUSTNESS_LEVELS:
             print(f"  Robustness: {transform_name} level {level}/3", flush=True)
-            y_true, y_prob = collect_cnn_predictions(
+            y_true, y_prob = prediction_collector(
                 model,
                 test_ds,
                 transform_name=transform_name,
@@ -113,7 +142,9 @@ def evaluate_cnn(
     y_pred = metrics.pop("y_pred")
     complexity = get_dl_model_complexity(model, model_path)
 
-    robustness = _evaluate_robustness(model, test_ds, report_dir)
+    robustness = _evaluate_robustness(
+        model, test_ds, report_dir, collect_cnn_predictions
+    )
     sample_images, _ = next(iter(test_ds.take(1)))
     latency = benchmark_latency(model, sample_images[:1])
     save_latency_result(latency, report_dir)
@@ -150,6 +181,66 @@ def evaluate_cnn(
         y_pred=y_pred,
     )
 
+    _print_results(config["display_name"], metrics, report_dir)
+    return metrics
+
+
+def evaluate_tflite(
+    model_name: str,
+    test_ds: tf.data.Dataset,
+    class_names: list[str],
+    model_configs: dict,
+    reports_dir: Path,
+) -> dict:
+    """Evaluate one quantized TFLite model and write common report artifacts."""
+    config = model_configs[model_name]
+    model_path = config["path"]
+    if not model_path.is_file():
+        raise FileNotFoundError(f"Model file not found: {model_path}")
+
+    model = load_tflite_model(model_name)
+    report_dir = get_report_dir(reports_dir, model_name)
+    y_true, y_prob = collect_tflite_predictions(model, test_ds)
+    metrics = _calculate_metrics(y_true, y_prob)
+    y_pred = metrics.pop("y_pred")
+    complexity = get_tflite_model_complexity(model_path)
+    robustness = _evaluate_robustness(
+        model, test_ds, report_dir, collect_tflite_predictions
+    )
+    sample_images, _ = next(iter(test_ds.take(1)))
+    latency = benchmark_tflite_latency(model, sample_images[:1])
+    save_latency_result(latency, report_dir)
+
+    metrics = {
+        "model": model_name,
+        "display_name": config["display_name"],
+        "model_type": "tflite",
+        **metrics,
+        **complexity,
+        **robustness,
+        "latency_mean_ms": latency["mean_ms"],
+        "latency_median_ms": latency["median_ms"],
+        "latency_p95_ms": latency["p95_ms"],
+        "throughput_images_per_second": latency["throughput_images_per_second"],
+    }
+    report = classification_report(
+        y_true,
+        y_pred,
+        labels=range(NUM_CLASSES),
+        target_names=class_names,
+        digits=4,
+    )
+    confusion = confusion_matrix(y_true, y_pred, labels=range(NUM_CLASSES))
+    save_evaluation_artifacts(
+        reports_dir=reports_dir,
+        model_name=model_name,
+        metrics=metrics,
+        report=report,
+        confusion=confusion,
+        class_names=class_names,
+        y_true=y_true,
+        y_pred=y_pred,
+    )
     _print_results(config["display_name"], metrics, report_dir)
     return metrics
 
@@ -214,6 +305,14 @@ def evaluate_model(model_name: str, model_configs: dict, reports_dir: Path) -> d
             batch_size=EVAL_BATCH_SIZE,
         )
         return evaluate_cnn(model_name, test_ds, class_names, model_configs, reports_dir)
+    if config["type"] == "tflite":
+        _, _, test_ds, class_names = load_datasets(
+            image_size=config["image_size"],
+            batch_size=EVAL_BATCH_SIZE,
+        )
+        return evaluate_tflite(
+            model_name, test_ds, class_names, model_configs, reports_dir
+        )
     if config["type"] == "ml":
         return evaluate_ml(model_name, model_configs, reports_dir)
     raise ValueError(f"Unsupported model type: {config['type']}")

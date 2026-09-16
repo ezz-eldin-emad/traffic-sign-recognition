@@ -102,6 +102,20 @@ MODEL_REGISTRY = {
         "path": MODEL_DIR / "mobilenet_v3_small_gtsrb.keras",
         "image_size": IMG_SIZE_MOBILENET,
     },
+    "custom_cnn_float16_tflite": {
+        "display_name": "Custom CNN (Float16 TFLite)",
+        "type": "tflite",
+        "path": MODEL_DIR / "cnn_model_customized_float16.tflite",
+        "image_size": IMG_SIZE_CUSTOM_CNN,
+        "supports_gradcam": False,
+    },
+    "custom_cnn_int8_tflite": {
+        "display_name": "Custom CNN (Int8 TFLite)",
+        "type": "tflite",
+        "path": MODEL_DIR / "cnn_model_customized_int8.tflite",
+        "image_size": IMG_SIZE_CUSTOM_CNN,
+        "supports_gradcam": False,
+    },
     "svm": {
         "display_name": "SVM",
         "type": "ml",
@@ -119,4 +133,6 @@ MODEL_REGISTRY = {
 DEEP_LEARNING_MODELS = (
     "custom_cnn",
     "mobilenet_v3_small_gtsrb",
+    "custom_cnn_float16_tflite",
+    "custom_cnn_int8_tflite",
 )

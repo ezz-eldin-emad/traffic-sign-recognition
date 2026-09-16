@@ -2,8 +2,10 @@ import json
 
 import pandas as pd
 import streamlit as st
+from PIL import Image
 
 from src.config import COMPARISON_PATH, MODEL_REGISTRY, REPORTS_DIR
+from app.app_pages.common import fit_image_to_box
 
 
 @st.cache_data
@@ -24,24 +26,27 @@ def file_json(path):
 
 
 def render_model_cards(comparison: pd.DataFrame) -> None:
-    columns = st.columns(4)
-    for column, model_name in zip(columns, MODEL_REGISTRY):
-        config = MODEL_REGISTRY[model_name]
-        with column:
-            with st.container(border=True):
-                st.subheader(config["display_name"])
-                row = (
-                    comparison.loc[comparison["model"] == model_name]
-                    if not comparison.empty
-                    else pd.DataFrame()
-                )
-                if row.empty:
-                    st.info("In progress" if config["type"] == "ml" else "No report yet")
-                    continue
+    model_names = list(MODEL_REGISTRY)
+    for start in range(0, len(model_names), 3):
+        columns = st.columns(3)
+        for column, model_name in zip(columns, model_names[start : start + 3]):
+            config = MODEL_REGISTRY[model_name]
+            with column:
+                with st.container(border=True):
+                    st.subheader(config["display_name"])
+                    row = (
+                        comparison.loc[comparison["model"] == model_name]
+                        if not comparison.empty
+                        else pd.DataFrame()
+                    )
+                    if row.empty:
+                        text = "In progress" if config["type"] == "ml" else "No report yet"
+                        st.info(text)
+                        continue
 
-                values = row.iloc[0]
-                st.metric("Top-1", f"{float(values['top1_accuracy']):.2%}")
-                st.metric("Macro F1", f"{float(values['macro_f1']):.2%}")
+                    values = row.iloc[0]
+                    st.metric("Top-1", f"{float(values['top1_accuracy']):.2%}")
+                    st.metric("Macro F1", f"{float(values['macro_f1']):.2%}")
 
 
 def render_comparison(comparison: pd.DataFrame) -> None:
@@ -94,7 +99,13 @@ def render_details(model_name: str) -> None:
 
     confusion_path = report_dir / "confusion_matrix.png"
     if confusion_path.is_file():
-        st.image(str(confusion_path), caption="Confusion matrix", width="stretch")
+        confusion_image = fit_image_to_box(
+            Image.open(confusion_path),
+            size=650,
+            background=(255, 255, 255),
+        )
+        with st.container(horizontal_alignment="center"):
+            st.image(confusion_image, caption="Confusion matrix", width=650)
 
     report_path = report_dir / "classification_report.txt"
     if report_path.is_file():

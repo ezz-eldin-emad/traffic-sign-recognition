@@ -1,0 +1,18 @@
+{
+  "model": "custom_cnn_float16_tflite",
+  "display_name": "Custom CNN (Float16 TFLite)",
+  "model_type": "tflite",
+  "test_samples": 12630,
+  "top1_accuracy": 0.9696753760886777,
+  "top5_accuracy": 0.9946951702296121,
+  "macro_f1": 0.9577565282573153,
+  "model_size_bytes": 486328,
+  "model_size": "474.93 KB",
+  "robustness_mean_top1": 0.9352247734670536,
+  "robustness_mean_top5": 0.9854139174804257,
+  "robustness_mean_macro_f1": 0.9027542161180592,
+  "latency_mean_ms": 3.664287699830311,
+  "latency_median_ms": 3.1923070000630105,
+  "latency_p95_ms": 4.997338000976015,
+  "throughput_images_per_second": 272.9043355537582
+}

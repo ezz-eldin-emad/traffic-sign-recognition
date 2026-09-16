@@ -304,6 +304,8 @@ def print_comparison(results: list[dict]) -> None:
                 if total_params is not None
                 else "N/A"
             )
+        elif model_type == "tflite":
+            complexity_text = "TFLite artifact"
         elif result["model"] == "svm":
             support_vectors = result.get("support_vectors")
             complexity_text = (

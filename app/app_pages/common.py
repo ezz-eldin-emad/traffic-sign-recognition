@@ -16,8 +16,29 @@ from src.xai.gradcam import make_gradcam_heatmap
 from src.xai.targets import get_target_layer
 
 
+DISPLAY_IMAGE_SIZE = 360
+
+
+def fit_image_to_box(
+    image: Image.Image,
+    size: int = DISPLAY_IMAGE_SIZE,
+    background: tuple[int, int, int] = (245, 245, 245),
+) -> Image.Image:
+    """Fit an image into a fixed square without stretching it."""
+    fitted = image.convert("RGB")
+    fitted.thumbnail((size, size), Image.Resampling.LANCZOS)
+
+    canvas = Image.new("RGB", (size, size), background)
+    position = (
+        (size - fitted.width) // 2,
+        (size - fitted.height) // 2,
+    )
+    canvas.paste(fitted, position)
+    return canvas
+
+
 @st.cache_resource(show_spinner=False)
-def get_model(model_name: str, model_path: str) -> tf.keras.Model:
+def get_model(model_name: str, model_path: str):
     """Cache a saved model and invalidate it when its file timestamp changes."""
     del model_path
     return load_model_by_name(model_name)
@@ -51,18 +72,24 @@ def run_prediction(model_name: str, image: Image.Image) -> dict:
     model_path = config["path"]
     model = get_model(model_name, f"{model_path}:{model_path.stat().st_mtime_ns}")
     tensor = preprocess_image(image, config["image_size"])
-    probabilities = model(tensor, training=False).numpy()[0]
+    if config["type"] == "tflite":
+        probabilities = model.predict(tensor.numpy())[0]
+    else:
+        probabilities = model(tensor, training=False).numpy()[0]
     top_indices = np.argsort(probabilities)[-3:][::-1]
     predicted_index = int(top_indices[0])
     class_id = MODEL_CLASS_IDS[predicted_index]
 
-    heatmap = make_gradcam_heatmap(
-        tensor,
-        model,
-        get_target_layer(model),
-        class_index=predicted_index,
-    )
-    heatmap_image, overlay = create_gradcam_images(image, heatmap)
+    heatmap_image = None
+    overlay = None
+    if config.get("supports_gradcam", config["type"] == "cnn"):
+        heatmap = make_gradcam_heatmap(
+            tensor,
+            model,
+            get_target_layer(model),
+            class_index=predicted_index,
+        )
+        heatmap_image, overlay = create_gradcam_images(image, heatmap)
     top3 = [
         {
             "Class": CLASS_NAMES[MODEL_CLASS_IDS[int(index)]],
@@ -77,4 +104,5 @@ def run_prediction(model_name: str, image: Image.Image) -> dict:
         "top3": top3,
         "heatmap": heatmap_image,
         "overlay": overlay,
+        "gradcam_available": heatmap_image is not None,
     }
