@@ -3,16 +3,16 @@
   "display_name": "Custom CNN (Int8 TFLite)",
   "model_type": "tflite",
   "test_samples": 12630,
-  "top1_accuracy": 0.9694378463974663,
+  "top1_accuracy": 0.9707838479809976,
   "top5_accuracy": 0.9930324623911322,
   "macro_f1": 0.9592357104525977,
   "model_size_bytes": 260352,
   "model_size": "254.25 KB",
-  "robustness_mean_top1": 0.9344506026216242,
+  "robustness_mean_top1": 0.9355766693058855,
   "robustness_mean_top5": 0.9819125538840504,
-  "robustness_mean_macro_f1": 0.9029466219332064,
-  "latency_mean_ms": 4.89574442999583,
-  "latency_median_ms": 4.729035497803125,
-  "latency_p95_ms": 5.793784999696072,
-  "throughput_images_per_second": 204.25902828445885
+  "robustness_mean_macro_f1": 0.9029658995400146,
+  "latency_mean_ms": 1.9261152198669151,
+  "latency_median_ms": 1.923174499097513,
+  "latency_p95_ms": 2.2968890007177833,
+  "throughput_images_per_second": 519.1797404877445
 }

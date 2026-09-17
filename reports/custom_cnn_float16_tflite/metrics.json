@@ -11,8 +11,8 @@
   "robustness_mean_top1": 0.9352247734670536,
   "robustness_mean_top5": 0.9854139174804257,
   "robustness_mean_macro_f1": 0.9027542161180592,
-  "latency_mean_ms": 3.664287699830311,
-  "latency_median_ms": 3.1923070000630105,
-  "latency_p95_ms": 4.997338000976015,
-  "throughput_images_per_second": 272.9043355537582
+  "latency_mean_ms": 7.219160339845985,
+  "latency_median_ms": 7.275660000232165,
+  "latency_p95_ms": 8.535142998880474,
+  "throughput_images_per_second": 138.52026453554765
 }
