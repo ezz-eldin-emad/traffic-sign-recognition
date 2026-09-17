@@ -1,0 +1,12 @@
+{
+  "warmup_runs": 10,
+  "measured_runs": 100,
+  "mean_ms": 1.9261152198669151,
+  "median_ms": 1.923174499097513,
+  "p95_ms": 2.2968890007177833,
+  "throughput_images_per_second": 519.1797404877445,
+  "runtime": "TensorFlow Lite",
+  "tensorflow_version": "2.21.0",
+  "python_version": "3.12.14",
+  "platform": "Linux-7.1.13-200.fc44.x86_64-x86_64-with-glibc2.43"
+}
