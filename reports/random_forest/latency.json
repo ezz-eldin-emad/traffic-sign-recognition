@@ -1,0 +1,11 @@
+{
+  "warmup_runs": 10,
+  "measured_runs": 100,
+  "mean_ms": 24.903427040262613,
+  "median_ms": 24.511536499630893,
+  "p95_ms": 26.361543998064008,
+  "throughput_images_per_second": 40.15511593578065,
+  "runtime": "scikit-learn",
+  "python_version": "3.12.14",
+  "platform": "Linux-7.2.5-200.fc44.x86_64-x86_64-with-glibc2.43"
+}

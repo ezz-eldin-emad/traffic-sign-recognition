@@ -1,0 +1,20 @@
+{
+  "model": "svm",
+  "display_name": "SVM",
+  "model_type": "classical_ml",
+  "test_samples": 12630,
+  "top1_accuracy": 0.6323040380047505,
+  "top5_accuracy": 0.9171813143309581,
+  "macro_f1": 0.6298748183148313,
+  "threshold": 1.0,
+  "model_size_bytes": 320029,
+  "model_size": "312.53 KB",
+  "n_features": 900,
+  "robustness_mean_top1": 0.5472420163631564,
+  "robustness_mean_top5": 0.8516934987243776,
+  "robustness_mean_macro_f1": 0.5416623769462651,
+  "latency_mean_ms": 11.598225200032175,
+  "latency_median_ms": 11.561339502804913,
+  "latency_p95_ms": 11.837840000225697,
+  "throughput_images_per_second": 86.22008822498341
+}

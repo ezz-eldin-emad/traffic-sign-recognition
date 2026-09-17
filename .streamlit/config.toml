@@ -1,0 +1,24 @@
+[theme]
+base = "dark"
+baseFontSize = 14
+baseFontWeight = 400
+headingFontSizes = ["28px", "22px", "18px", "15px", "13px", "12px"]
+headingFontWeights = [600, 600, 600, 500, 500, 500]
+codeFontSize = "0.82rem"
+linkUnderline = false
+
+[theme.light]
+primaryColor = "#3f7187"
+backgroundColor = "#eef2f3"
+secondaryBackgroundColor = "#f8fafb"
+textColor = "#26343b"
+borderColor = "#c9d4d8"
+showWidgetBorder = true
+
+[theme.dark]
+primaryColor = "#8bb8c7"
+backgroundColor = "#18252b"
+secondaryBackgroundColor = "#22343b"
+textColor = "#e6eef0"
+borderColor = "#40545c"
+showWidgetBorder = true

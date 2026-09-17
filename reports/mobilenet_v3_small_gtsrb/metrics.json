@@ -1,0 +1,21 @@
+{
+  "model": "mobilenet_v3_small_gtsrb",
+  "display_name": "MobileNetV3-Small",
+  "model_type": "deep_learning",
+  "test_samples": 12630,
+  "top1_accuracy": 0.9078384798099762,
+  "top5_accuracy": 0.9948535233570863,
+  "macro_f1": 0.8414063643771434,
+  "model_size_bytes": 10019508,
+  "model_size": "9.56 MB",
+  "total_parameters": 1018523,
+  "trainable_parameters": 667595,
+  "non_trainable_parameters": 350928,
+  "robustness_mean_top1": 0.8893375560833994,
+  "robustness_mean_top5": 0.9892407847277206,
+  "robustness_mean_macro_f1": 0.8217056105179333,
+  "latency_mean_ms": 132.5699191100466,
+  "latency_median_ms": 130.85396150017914,
+  "latency_p95_ms": 146.5468520000286,
+  "throughput_images_per_second": 7.543189335205806
+}

@@ -6,6 +6,9 @@ dependencies = [
     "numpy",
     "pandas",
     "scikit-learn",
+    "scikit-image",
+    "opencv-python-headless",
+    "joblib",
     "matplotlib",
     "seaborn",
     "streamlit",
@@ -15,11 +18,12 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-
 cpu = [
     "tensorflow-cpu",
 ]
-
 cuda = [
     "tensorflow[and-cuda]",
 ]
+
+[project.scripts]
+train = "src.training.train:main"
